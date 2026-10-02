@@ -25,3 +25,8 @@ plt.xlabel("Goals in season")
 plt.ylabel("Market value (€)")
 plt.savefig("charts/goals_vs_value.png")
 plt.close()
+
+corr_cols = ["season", "age", "games", "minutes", "goals", "assists",
+             "yellow_cards", "red_cards", "height_in_cm", "market_value"]
+
+print(table[corr_cols].corr()["market_value"].sort_values())
