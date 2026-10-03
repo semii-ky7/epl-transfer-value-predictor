@@ -28,3 +28,13 @@ pd.set_option("display.float_format", "{:,.0f}".format)
 weights = pd.Series(model.coef_, index=X.columns)
 print(weights)
 print("Starting number (intercept):", f"{model.intercept_:,.0f}")
+
+predictions = model.predict(X_test)
+
+results = table.loc[X_test.index, ["name", "season", "age", "goals"]]
+results["actual"] = y_test
+results["predicted"] = predictions
+results["gap"] = results["predicted"] - results["actual"]
+
+print(results.head(10))
+print("Negative predictions:", (predictions < 0).sum())
