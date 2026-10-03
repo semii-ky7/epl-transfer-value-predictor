@@ -1,4 +1,6 @@
+from sklearn.linear_model import LinearRegression
 import pandas as pd
+
 from sklearn.model_selection import train_test_split
 
 table = pd.read_csv("data/processed/player_seasons_clean.csv")
@@ -17,3 +19,12 @@ print(y_train.shape, y_test.shape)
 print(X.shape)
 print(y.shape)
 print(X.head())
+
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+pd.set_option("display.float_format", "{:,.0f}".format)
+
+weights = pd.Series(model.coef_, index=X.columns)
+print(weights)
+print("Starting number (intercept):", f"{model.intercept_:,.0f}")
