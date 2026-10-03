@@ -7,6 +7,8 @@ features = ["age", "season", "games", "minutes", "goals", "assists", "height_in_
 X = table[features]
 y = table["market_value"]
 
+X = pd.get_dummies(X, columns=["position"], drop_first=True)
+
 print(X.shape)
 print(y.shape)
 print(X.head())
