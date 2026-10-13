@@ -3,6 +3,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
+import numpy as np
 import pandas as pd
 
 from sklearn.model_selection import train_test_split
@@ -50,3 +51,12 @@ print("--- baseline model ---")
 print(f"MAE: €{mae:,.0f}")
 print(f"Test R²: {r2:.3f}")
 print(f"Train R²: {train_r2:.3f}")
+
+y_train_log = np.log(y_train)
+
+model_log = LinearRegression()
+model_log.fit(X_train, y_train_log)
+
+predictions_log = model_log.predict(X_test)
+print("--- log model ---")
+print(predictions_log[:5])
