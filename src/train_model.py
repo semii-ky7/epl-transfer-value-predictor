@@ -69,3 +69,20 @@ r2_log = r2_score(y_test, predictions_back)
 print(f"MAE: €{mae_log:,.0f}")
 print(f"Test R²: {r2_log:.3f}")
 print("Negative predictions:", (predictions_back < 0).sum())
+
+
+comparison = table.loc[X_test.index, ["name", "season", "age"]]
+comparison["actual"] = y_test
+comparison["baseline"] = predictions
+comparison["log_model"] = predictions_back
+
+print("--- 10 typical test players ---")
+print(comparison.head(10))
+
+print("--- 5 most valuable test players ---")
+print(comparison.sort_values("actual", ascending=False).head(5))
+
+median_err_base = (comparison["baseline"] - comparison["actual"]).abs().median()
+median_err_log = (comparison["log_model"] - comparison["actual"]).abs().median()
+print(f"Median error - baseline: €{median_err_base:,.0f}")
+print(f"Median error - log model: €{median_err_log:,.0f}")
