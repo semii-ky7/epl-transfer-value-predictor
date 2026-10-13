@@ -86,3 +86,9 @@ median_err_base = (comparison["baseline"] - comparison["actual"]).abs().median()
 median_err_log = (comparison["log_model"] - comparison["actual"]).abs().median()
 print(f"Median error - baseline: €{median_err_base:,.0f}")
 print(f"Median error - log model: €{median_err_log:,.0f}")
+
+weights_log = pd.Series(model_log.coef_, index=X.columns)
+percent_change = (np.exp(weights_log) - 1) * 100
+
+print("--- log model: % change in value per +1 of each feature ---")
+print(percent_change.round(1))
