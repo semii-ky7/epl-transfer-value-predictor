@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 import pandas as pd
@@ -41,3 +42,11 @@ results["gap"] = results["predicted"] - results["actual"]
 
 print(results.head(10))
 print("Negative predictions:", (predictions < 0).sum())
+mae = mean_absolute_error(y_test, predictions)
+r2 = r2_score(y_test, predictions)
+train_r2 = model.score(X_train, y_train)
+
+print("--- baseline model ---")
+print(f"MAE: €{mae:,.0f}")
+print(f"Test R²: {r2:.3f}")
+print(f"Train R²: {train_r2:.3f}")
