@@ -60,3 +60,12 @@ model_log.fit(X_train, y_train_log)
 predictions_log = model_log.predict(X_test)
 print("--- log model ---")
 print(predictions_log[:5])
+
+predictions_back = np.exp(predictions_log)
+
+mae_log = mean_absolute_error(y_test, predictions_back)
+r2_log = r2_score(y_test, predictions_back)
+
+print(f"MAE: €{mae_log:,.0f}")
+print(f"Test R²: {r2_log:.3f}")
+print("Negative predictions:", (predictions_back < 0).sum())
