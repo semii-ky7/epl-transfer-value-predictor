@@ -37,8 +37,37 @@ def predict_values(rows, model):
     return result.sort_values("season")
 
 
-if __name__ == "__main__":
-    pd.set_option("display.float_format", "{:,.0f}".format)
+def euros(value):
+    """Format a euro amount in millions, e.g. 56923216 -> '€56.9m'."""
+    return f"€{value / 1_000_000:,.1f}m"
+
+
+def show_player(result):
+    """Print every season, then a one-line verdict on the latest one."""
+    print(f"\n{result['name'].iloc[0]}")
+    for _, row in result.iterrows():
+        print(f"  {row['season']}  age {row['age']:.0f}  {row['goals']:>2} goals  "
+              f"actual {euros(row['market_value']):>8}  predicted {euros(row['predicted']):>8}")
+
+    latest = result.iloc[-1]
+    if latest["gap"] < 0:
+        verdict = f"under-valued by the model by {euros(-latest['gap'])}"
+    else:
+        verdict = f"over-valued by the model by {euros(latest['gap'])}"
+    print(f"Latest season ({latest['season']}): {verdict}")
+
+
+def main():
     model = load_model()
     table = load_table()
-    print(predict_values(find_player("Bukayo Saka", table), model))
+    print("Type a player's name, or q to quit.")
+
+    while True:
+        name = input("\nEnter a player: ")
+        if name.strip().lower() == "q":
+            break
+        show_player(predict_values(find_player(name, table), model))
+
+
+if __name__ == "__main__":
+    main()
