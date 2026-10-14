@@ -71,3 +71,19 @@ if name:
             hide_index=True,
             use_container_width=True,
         )
+
+st.divider()
+with st.expander("How the model works, and where it goes wrong"):
+    st.markdown(
+        "- **Data:** Transfermarkt's public dataset. Outfield players only, with at least 900 "
+        "Premier League minutes in a season. Value is the last Transfermarkt valuation of each season.\n"
+        "- **Model:** linear regression on the *log* of market value, so each feature changes value "
+        "by a percentage rather than a fixed number of euros.\n"
+        "- **Accuracy on 847 unseen player-seasons:** typical error €5.4m, average error €9.5m.\n"
+        "- **Biggest driver:** age. Each extra year costs about 12% of value, more than a goal adds (+7%).\n"
+        "- **Known weaknesses:** it over-values cheap players, under-values stars (€100m+ players come out "
+        "around €40–55m), and over-reacts to one exceptional season because percentages compound "
+        "(30 goals ≈ 7.6× the value). It can't see club, contract length, potential or reputation."
+    )
+    st.image("charts/feature_effects.png", caption="What moves a player's value, all else equal")
+    st.image("charts/residuals.png", caption="Where the model misprices")
