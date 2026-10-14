@@ -4,7 +4,9 @@ Can a Premier League player's season stats predict what he's worth?
 
 This project trains a linear regression on **4,232 Premier League player-seasons (2012/13 to 2025/26)** of Transfermarkt data, then lets you search any player and compare the model's valuation with Transfermarkt's.
 
-**Try it live: [semii-ky7.github.io/epl-transfer-value-predictor](https://semii-ky7.github.io/epl-transfer-value-predictor/)**
+### [🌐 Open the website →](https://semii-ky7.github.io/epl-transfer-value-predictor/)
+
+Search any Premier League player at **[semii-ky7.github.io/epl-transfer-value-predictor](https://semii-ky7.github.io/epl-transfer-value-predictor/)**.
 
 ## Headline result
 
