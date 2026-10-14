@@ -4,7 +4,7 @@ Can a Premier League player's season stats predict what he's worth?
 
 This project trains a linear regression on **4,232 Premier League player-seasons (2012/13 to 2025/26)** of Transfermarkt data, then lets you search any player and compare the model's valuation with Transfermarkt's.
 
-**Try it live:** _link coming soon_
+**Try it live: [semii-ky7.github.io/epl-transfer-value-predictor](https://semii-ky7.github.io/epl-transfer-value-predictor/)**
 
 ## Headline result
 
@@ -30,10 +30,15 @@ data/processed/player_seasons_clean.csv   (4,232 rows, committed)
   │  src/train_model.py   train linear regression, evaluate, save the model
   ▼
 models/value_model.joblib
-  │  src/predict.py       find a player and predict his value (CLI + reusable functions)
-  │  src/app.py           Streamlit web app built on predict.py
-  ▼  src/charts.py        evaluation charts
+  │  src/predict.py            find a player and predict his value (CLI + reusable functions)
+  │  src/charts.py             evaluation charts
+  ▼  src/export_site_data.py   predict every season and export it for the website
+docs/   static website (HTML, CSS, JavaScript) served by GitHub Pages
 ```
+
+### The website
+
+`docs/` is a plain static site with no framework and no server. `src/export_site_data.py` runs the saved model over all 4,232 player-seasons and writes `docs/data/players.json`, which the page searches in the browser. Each player's view shows Transfermarkt's value against the model's as a scoreline, a season-by-season chart and table, and marks which seasons the model never saw in training.
 
 ### Data
 
@@ -103,11 +108,14 @@ pip install -r requirements.txt
 The clean table and trained model are committed, so these work straight away:
 
 ```bash
-streamlit run src/app.py       # web app at http://localhost:8501
-python src/predict.py          # search players in the terminal
-python src/train_model.py      # retrain, print evaluation, save the model
-python src/charts.py           # regenerate the evaluation charts
+python3 -m http.server --directory docs   # the website at http://localhost:8000
+python src/predict.py                     # search players in the terminal
+python src/train_model.py                 # retrain, print evaluation, save the model
+python src/charts.py                      # regenerate the evaluation charts
+python src/export_site_data.py            # refresh the website's data after retraining
 ```
+
+The website has to be served (the command above) rather than opened as a file, because it loads its data with `fetch`.
 
 ### Rebuilding the data from scratch
 
@@ -125,6 +133,7 @@ Get a free key at [football-data.org](https://www.football-data.org/client/regis
 ├── data/
 │   ├── raw/                 Kaggle CSVs (gitignored)
 │   └── processed/           player_seasons_clean.csv (committed)
+├── docs/                    the website: index.html, styles.css, app.js, data/players.json
 ├── models/                  value_model.joblib
 ├── practice/                pandas warm-up exercises
 ├── src/
@@ -135,7 +144,7 @@ Get a free key at [football-data.org](https://www.football-data.org/client/regis
 │   ├── train_model.py       train and evaluate
 │   ├── charts.py            evaluation charts
 │   ├── predict.py           player lookup and prediction
-│   ├── app.py               Streamlit app
+│   ├── export_site_data.py  export predictions for the website
 │   └── fetch_squads.py      optional API fetch
 ├── .env.example
 └── requirements.txt
@@ -147,7 +156,7 @@ Get a free key at [football-data.org](https://www.football-data.org/client/regis
 - **Check results against what you already know.** Hand-checking Haaland's 36 goals and Salah's missing Roma seasons caught problems a summary statistic never would.
 - **Every metric hides something.** The log model improved MAE and median error but lowered R². Looking at the same players under both models was the only way to see why.
 - **The surprising finding was age.** I expected goals to dominate. Being a year younger is worth more than scoring one more goal.
-- **Tools:** pandas (merges, groupby, dates, missing data), scikit-learn, matplotlib, Streamlit, git branches and pull requests.
+- **Tools:** pandas (merges, groupby, dates, missing data), scikit-learn, matplotlib, HTML/CSS/JavaScript, GitHub Pages, git branches and pull requests.
 
 ## Next steps
 
