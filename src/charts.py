@@ -43,3 +43,23 @@ ax.legend(loc="upper left")
 fig.tight_layout()
 fig.savefig("charts/predicted_vs_actual.png", dpi=150)
 plt.close(fig)
+
+# Residuals: actual ÷ predicted for each player.
+# 1× means spot on, above 1× the model under-valued him, below 1× it over-valued him.
+test["ratio"] = test["actual"] / test["predicted"]
+
+fig, ax = plt.subplots(figsize=(8, 5))
+ax.scatter(test["actual"], test["ratio"], alpha=0.35, s=14)
+ax.axhline(1, color="black", linestyle="--", linewidth=1, label="Spot on")
+ax.set_xscale("log")
+ax.set_yscale("log")
+ax.xaxis.set_major_formatter(millions)
+ax.yaxis.set_major_formatter(FuncFormatter(lambda value, _: f"{value:g}×"))
+ax.set_xlabel("Actual market value (€, log scale)")
+ax.set_ylabel("Actual ÷ predicted (log scale)")
+ax.set_title("Residuals — the model over-values cheap players and under-values stars")
+ax.text(0.02, 0.95, "Above the line: model under-valued", transform=ax.transAxes, va="top")
+ax.text(0.02, 0.05, "Below the line: model over-valued", transform=ax.transAxes, va="bottom")
+fig.tight_layout()
+fig.savefig("charts/residuals.png", dpi=150)
+plt.close(fig)
