@@ -17,13 +17,6 @@ y = table["market_value"]
 X = pd.get_dummies(X, columns=["position"], drop_first=True)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# print(X_train.shape, X_test.shape)
-# print(y_train.shape, y_test.shape)
-
-# print(X.shape)
-# print(y.shape)
-# print(X.head())
-
 model = LinearRegression()
 model.fit(X_train, y_train)
 
@@ -68,7 +61,6 @@ r2_log = r2_score(y_test, predictions_back)
 print(f"MAE: €{mae_log:,.0f}")
 print(f"Test R²: {r2_log:.3f}")
 print("Negative predictions:", (predictions_back < 0).sum())
-
 
 comparison = table.loc[X_test.index, ["name", "season", "age"]]
 comparison["actual"] = y_test
