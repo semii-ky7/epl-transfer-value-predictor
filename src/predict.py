@@ -1,3 +1,5 @@
+import difflib
+
 import joblib
 import numpy as np
 import pandas as pd
@@ -20,8 +22,35 @@ def load_table(path=TABLE_PATH):
 
 
 def find_player(name, table):
-    """Return every season for the player with this exact name."""
-    return table[table["name"] == name]
+    """Return every season for the best match for name, or None if nothing matches.
+
+    Tries, in order: the exact name ignoring case ("bukayo saka"), names that
+    contain the text ("saka"), then the closest spelling ("Bukayo Sakaa").
+    """
+    query = name.strip().lower()
+    if not query:
+        return None
+    lower_names = table["name"].str.lower()
+
+    exact = table[lower_names == query]
+    if not exact.empty:
+        return exact
+
+    partial = table[lower_names.str.contains(query, regex=False)]
+    if partial["name"].nunique() == 1:
+        return partial
+    if partial["name"].nunique() > 1:
+        options = ", ".join(sorted(partial["name"].unique())[:5])
+        print(f"'{name}' matches several players: {options}")
+        return None
+
+    # cutoff=0.8 means the spelling must be at least 80% similar
+    close = difflib.get_close_matches(query, lower_names.unique(), n=1, cutoff=0.8)
+    if close:
+        match = table[lower_names == close[0]]
+        print(f"No exact match for '{name}', showing {match['name'].iloc[0]}")
+        return match
+    return None
 
 
 def predict_values(rows, model):
@@ -66,7 +95,9 @@ def main():
         name = input("\nEnter a player: ")
         if name.strip().lower() == "q":
             break
-        show_player(predict_values(find_player(name, table), model))
+        rows = find_player(name, table)
+        if rows is not None:
+            show_player(predict_values(rows, model))
 
 
 if __name__ == "__main__":
