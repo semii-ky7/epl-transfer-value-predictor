@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Market vs Model — EPL Transfer Value Predictor</title>
+  <meta name="description" content="A linear regression trained on 4,232 Premier League player-seasons prices every outfield player from his stats alone. Search a player to see where it agrees with Transfermarkt, and where it doesn't.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip" href="#search">Skip to player search</a>
+
+  <header class="masthead">
+    <div class="wrap masthead-row">
+      <a class="wordmark" href="#">Market <span class="vs">vs</span> Model</a>
+      <nav aria-label="Sections">
+        <a href="#search">Search</a>
+        <a href="#findings">Findings</a>
+        <a href="#accuracy">Accuracy</a>
+        <a href="#method">Method</a>
+        <a href="https://github.com/semii-ky7/epl-transfer-value-predictor">Code</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section id="search" class="section wrap">
+      <h1>Market vs Model</h1>
+      <p class="lede">
+        A linear regression trained on <span data-metric="player_seasons">4,232</span> Premier League
+        player-seasons (2012/13 to 2025/26) prices every outfield player from his stats alone: age,
+        minutes, goals, assists, height and position. Search a player to see where it agrees with
+        Transfermarkt, and where it doesn't.
+      </p>
+
+      <div class="search">
+        <label for="player-input" class="search-label">Player</label>
+        <div class="combo">
+          <input id="player-input" type="search" role="combobox" autocomplete="off" spellcheck="false"
+                 aria-autocomplete="list" aria-expanded="false" aria-controls="player-options"
+                 placeholder="Loading players…" disabled>
+          <ul id="player-options" class="options" role="listbox" aria-label="Matching players" hidden></ul>
+        </div>
+        <p id="search-note" class="search-note" aria-live="polite"></p>
+        <p class="examples">
+          Or pick one:
+          <a href="#p=433177">Bukayo Saka</a>
+          <a href="#p=418560">Erling Haaland</a>
+          <a href="#p=357662">Declan Rice</a>
+          <a href="#p=148455">Mohamed Salah</a>
+          <a href="#p=568177">Cole Palmer</a>
+        </p>
+      </div>
+
+      <div id="result" class="result" aria-live="polite">
+        <p class="status">Loading player data…</p>
+      </div>
+    </section>
+
+    <section id="findings" class="section wrap">
+      <h2>What the model learned</h2>
+      <div class="prose">
+        <p>
+          The model is trained on the <em>logarithm</em> of market value, so each feature moves a
+          player's price by a percentage rather than a fixed number of euros. Read each bar as
+          "one more of this, everything else equal".
+        </p>
+      </div>
+      <figure class="effects-figure">
+        <div id="effects" class="effects" role="img" aria-label="Percentage change in predicted value per unit of each feature"></div>
+        <figcaption>Change in predicted value. Minutes are shown per 90, one full game. Position is compared with a forward with identical stats.</figcaption>
+      </figure>
+
+      <div class="findings">
+        <article class="finding">
+          <h3>Age beats goals</h3>
+          <p>Each extra year costs about <strong>12%</strong> of a player's value. One more goal adds
+            about <strong>7%</strong>. Mohamed Salah scored 32 goals at 25 and 29 at 32; Transfermarkt
+            valued him at €150m and then €50m.</p>
+        </article>
+        <article class="finding">
+          <h3>Stars are under-priced</h3>
+          <p>Players worth €100m or more come out at around €40–55m. Moisés Caicedo and Declan Rice
+            score a handful of goals a season; their price is in defending, club and potential,
+            none of which the model can see.</p>
+        </article>
+        <article class="finding">
+          <h3>Big seasons compound</h3>
+          <p>Because each goal multiplies value, 30 goals is roughly 7.6× the value of none. Haaland's
+            36-goal debut season comes out at €486m against Transfermarkt's €180m.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="accuracy" class="section wrap">
+      <h2>How accurate is it?</h2>
+      <div class="accuracy">
+        <div class="prose">
+          <p>
+            One in five player-seasons was held back during training. On those
+            <span data-metric="test_seasons">847</span> unseen seasons, the typical miss is
+            <strong data-metric="median_error">€5.4m</strong> and the average miss is
+            <strong data-metric="mean_error">€9.5m</strong>.
+          </p>
+          <p>
+            Dots above the diagonal are players the model over-values; dots below are players it
+            under-values. Cheap players sit above the line and expensive players sit below it: the
+            model pulls everyone towards the middle. Select a dot to look that player up.
+          </p>
+        </div>
+        <figure class="scatter-figure">
+          <div id="scatter" class="scatter"></div>
+          <figcaption>Each dot is one unseen player-season. Both axes are logarithmic.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="method" class="section wrap">
+      <h2>Method</h2>
+      <ol class="pipeline">
+        <li><span class="step">Filter</span> 1.9 million Transfermarkt appearances down to the Premier League: 149,751 rows.</li>
+        <li><span class="step">Build</span> one row per player per season: games, minutes, goals, assists, age on 1 September, and the last market valuation of that season.</li>
+        <li><span class="step">Clean</span> remove goalkeepers and seasons under 900 minutes, drop rows missing value or age, fill missing height with the median: 4,232 rows.</li>
+        <li><span class="step">Train</span> linear regression on log(market value), 80/20 train/test split with a fixed seed.</li>
+        <li><span class="step">Publish</span> predict every season with the saved model and export it for this page.</li>
+      </ol>
+      <div class="prose">
+        <p>
+          The full write-up, code and decisions are in the
+          <a href="https://github.com/semii-ky7/epl-transfer-value-predictor">GitHub repository</a>.
+          Market values come from the public
+          <a href="https://www.kaggle.com/datasets/davidcariboo/player-scores">Transfermarkt dataset on Kaggle</a>
+          compiled by David Cariboo. This project is not affiliated with Transfermarkt.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-row">
+      <span>EPL Transfer Value Predictor</span>
+      <a href="https://github.com/semii-ky7">Built by semii-ky7</a>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
