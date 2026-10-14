@@ -58,3 +58,32 @@ models/value_model.joblib
 | **Model trained on log(value)** | values range 800× (€250k to €200m); logs stop a few superstars dominating and make negative predictions impossible |
 
 Features: age, season, games, minutes, goals, assists, height and position (one-hot encoded, attacker as baseline). Data is split 80/20 into training and test sets with a fixed random seed.
+
+## Results
+
+Scores on the 847-row test set the model never trained on:
+
+| | Baseline (euros) | Log model (used in the app) |
+|---|---|---|
+| Median error (typical player) | €8.0m | **€5.4m** |
+| Mean absolute error | €10.3m | **€9.5m** |
+| Negative predictions | 64 | **0** |
+| R² (in euros) | **0.48** | 0.40 |
+| Train R² vs test R² | 0.49 vs 0.48 | no overfitting |
+
+The log model is better for the typical player and never predicts a negative price. Its lower R² comes from under-valuing a handful of very expensive players, and R² punishes big misses on big numbers heavily. Neither model should be trusted above roughly €50m.
+
+![Predicted vs actual](charts/predicted_vs_actual.png)
+
+The residuals show the pattern clearly: cheap players are over-valued and stars are under-valued, so the model pulls everyone towards the middle.
+
+![Residuals](charts/residuals.png)
+
+### Where it goes wrong
+
+| Player, season | Transfermarkt | Model | Why |
+|---|---|---|---|
+| Moisés Caicedo, 2025/26 | €100m | €39m | elite defensive midfielder: his value isn't in goals or assists |
+| Declan Rice, 2025/26 | €120m | €52m | the same story |
+| Erling Haaland, 2022/23 | €180m | €486m | 36 goals. +7% per goal **compounds**, so 30 goals ≈ 7.6× the value |
+| Mohamed Salah, 2024/25 | €50m | €228m | 29 goals and 18 assists at 32: the model rewards the season, the market prices in his age |
