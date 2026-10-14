@@ -63,3 +63,36 @@ ax.text(0.02, 0.05, "Below the line: model over-valued", transform=ax.transAxes,
 fig.tight_layout()
 fig.savefig("charts/residuals.png", dpi=150)
 plt.close(fig)
+
+# Feature effects: % change in predicted value for +1 of each feature
+labels = {
+    "age": "Age (+1 year)",
+    "season": "Season (+1 year)",
+    "games": "Games (+1)",
+    "minutes": "Minutes (+90, one full game)",
+    "goals": "Goals (+1)",
+    "assists": "Assists (+1)",
+    "height_in_cm": "Height (+1 cm)",
+    "position_Defender": "Defender vs attacker",
+    "position_Midfield": "Midfielder vs attacker",
+}
+# One extra minute is too small to see, so minutes are shown per 90
+steps = np.array([90 if name == "minutes" else 1 for name in model.feature_names_in_])
+effects = (np.exp(model.coef_ * steps) - 1) * 100
+order = np.argsort(effects)
+names = [labels[model.feature_names_in_[i]] for i in order]
+values = effects[order]
+colours = ["#c0392b" if value < 0 else "#2e86c1" for value in values]
+
+fig, ax = plt.subplots(figsize=(8, 5))
+ax.barh(names, values, color=colours)
+ax.axvline(0, color="black", linewidth=1)
+for i, value in enumerate(values):
+    ax.text(value + (0.6 if value >= 0 else -0.6), i, f"{value:+.1f}%",
+            va="center", ha="left" if value >= 0 else "right")
+ax.set_xlim(min(values) - 6, max(values) + 6)
+ax.set_xlabel("Change in predicted market value (%)")
+ax.set_title("What moves a player's value, all else equal")
+fig.tight_layout()
+fig.savefig("charts/feature_effects.png", dpi=150)
+plt.close(fig)
