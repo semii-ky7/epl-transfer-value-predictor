@@ -32,8 +32,9 @@ def load_table(path=TABLE_PATH):
 def find_player(name, table):
     """Return every season for the best match for name.
 
-    Tries, in order: the exact name ignoring case ("bukayo saka"), names that
-    contain the text ("saka"), then the closest spelling ("Bukayo Sakaa").
+    Tries, in order: the exact name ignoring case ("bukayo saka"), a whole word
+    of a name ("saka", but not "Wan-Bissaka"), names that contain the text
+    ("haal"), then the closest spelling ("Bukayo Sakaa").
     Raises PlayerNotFoundError if there is no match or several possible matches.
     """
     query = name.strip().lower()
@@ -45,12 +46,14 @@ def find_player(name, table):
     if not exact.empty:
         return exact
 
+    whole_word = table[lower_names.str.split().apply(lambda words: query in words)]
     partial = table[lower_names.str.contains(query, regex=False)]
-    if partial["name"].nunique() == 1:
-        return partial
-    if partial["name"].nunique() > 1:
-        options = ", ".join(sorted(partial["name"].unique())[:5])
-        raise PlayerNotFoundError(f"'{name}' matches several players: {options}. Be more specific.")
+    for matches in (whole_word, partial):
+        if matches["name"].nunique() == 1:
+            return matches
+        if matches["name"].nunique() > 1:
+            options = ", ".join(sorted(matches["name"].unique())[:5])
+            raise PlayerNotFoundError(f"'{name}' matches several players: {options}. Be more specific.")
 
     # cutoff=0.8 means the spelling must be at least 80% similar
     close = difflib.get_close_matches(query, lower_names.unique(), n=1, cutoff=0.8)
