@@ -87,3 +87,56 @@ The residuals show the pattern clearly: cheap players are over-valued and stars 
 | Declan Rice, 2025/26 | €120m | €52m | the same story |
 | Erling Haaland, 2022/23 | €180m | €486m | 36 goals. +7% per goal **compounds**, so 30 goals ≈ 7.6× the value |
 | Mohamed Salah, 2024/25 | €50m | €228m | 29 goals and 18 assists at 32: the model rewards the season, the market prices in his age |
+
+## Run it yourself
+
+Requires Python 3.13.
+
+```bash
+git clone https://github.com/semii-ky7/epl-transfer-value-predictor.git
+cd epl-transfer-value-predictor
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+The clean table and trained model are committed, so these work straight away:
+
+```bash
+streamlit run src/app.py       # web app at http://localhost:8501
+python src/predict.py          # search players in the terminal
+python src/train_model.py      # retrain, print evaluation, save the model
+python src/charts.py           # regenerate the evaluation charts
+```
+
+### Rebuilding the data from scratch
+
+1. Download the [Kaggle dataset](https://www.kaggle.com/datasets/davidcariboo/player-scores) and put the CSVs in `data/raw/` (gitignored).
+2. Run `python src/load_data.py`, then `python src/build_table.py`, then `python src/clean_table.py`.
+
+### Optional: current squads from football-data.org
+
+Get a free key at [football-data.org](https://www.football-data.org/client/register), copy `.env.example` to `.env`, add the key, then run `python src/fetch_squads.py`. `.env` is gitignored, so the key is never committed.
+
+## Project structure
+
+```
+├── charts/                  saved PNG charts
+├── data/
+│   ├── raw/                 Kaggle CSVs (gitignored)
+│   └── processed/           player_seasons_clean.csv (committed)
+├── models/                  value_model.joblib
+├── practice/                pandas warm-up exercises
+├── src/
+│   ├── load_data.py         filter to the Premier League
+│   ├── build_table.py       build player-season table
+│   ├── clean_table.py       clean it
+│   ├── explore.py           summary stats, first charts, correlations
+│   ├── train_model.py       train and evaluate
+│   ├── charts.py            evaluation charts
+│   ├── predict.py           player lookup and prediction
+│   ├── app.py               Streamlit app
+│   └── fetch_squads.py      optional API fetch
+├── .env.example
+└── requirements.txt
+```
