@@ -64,12 +64,17 @@ def find_player(name, table):
     )
 
 
-def predict_values(rows, model):
-    """Add the model's predicted value and the gap to each season in rows."""
+def build_features(rows, model):
+    """Turn table rows into the exact feature columns the model was trained on."""
     X = pd.get_dummies(rows[FEATURES], columns=["position"])
     # A single player has one position, so get_dummies only makes that one column.
     # reindex adds any missing position columns (as False) in the order the model expects.
-    X = X.reindex(columns=model.feature_names_in_, fill_value=False)
+    return X.reindex(columns=model.feature_names_in_, fill_value=False)
+
+
+def predict_values(rows, model):
+    """Add the model's predicted value and the gap to each season in rows."""
+    X = build_features(rows, model)
 
     result = rows[["name", "season", "age", "goals", "assists", "market_value"]].copy()
     result["predicted"] = np.exp(model.predict(X))
