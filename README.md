@@ -140,3 +140,18 @@ Get a free key at [football-data.org](https://www.football-data.org/client/regis
 ├── .env.example
 └── requirements.txt
 ```
+
+## What I learned
+
+- **Most of the work is the data.** Getting from 1.9 million match rows to a clean, trustworthy table took longer than training the model, and every cleaning step was a decision I had to be able to defend.
+- **Check results against what you already know.** Hand-checking Haaland's 36 goals and Salah's missing Roma seasons caught problems a summary statistic never would.
+- **Every metric hides something.** The log model improved MAE and median error but lowered R². Looking at the same players under both models was the only way to see why.
+- **The surprising finding was age.** I expected goals to dominate. Being a year younger is worth more than scoring one more goal.
+- **Tools:** pandas (merges, groupby, dates, missing data), scikit-learn, matplotlib, Streamlit, git branches and pull requests.
+
+## Next steps
+
+- Add the features the market actually pays for: club, contract length, international caps and the previous season's value.
+- Try non-linear models (random forest, gradient boosting) that can capture superstar prices without compounding.
+- Build a separate goalkeeper model using saves and clean sheets.
+- Retrain each season as new Transfermarkt data is released.
