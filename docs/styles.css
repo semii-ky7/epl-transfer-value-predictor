@@ -278,7 +278,7 @@ figcaption { font-size: 15px; color: var(--ink-2); margin-top: var(--s4); max-wi
   body { font-size: 17px; }
   .wrap { padding: 0 var(--s4); }
   .masthead-row { flex-direction: column; align-items: flex-start; gap: 0; padding-top: var(--s2); padding-bottom: var(--s2); }
-  .masthead nav { gap: var(--s4); }
+  .masthead nav { column-gap: var(--s4); row-gap: 0; }
   .masthead { position: static; }
   h2 { font-size: 36px; }
   .player-name { font-size: 38px; }
@@ -289,4 +289,11 @@ figcaption { font-size: 15px; color: var(--ink-2); margin-top: var(--s4); max-wi
   .effects { grid-template-columns: 1fr; gap: 2px; }
   .eff-label { margin-top: var(--s2); font-size: 15px; }
   .examples a { margin-left: 0; margin-right: var(--s3); display: inline-block; }
+}
+
+/* Very narrow screens: stack the two sides of the scoreline */
+@media (max-width: 400px) {
+  .scoreline { grid-template-columns: 1fr; gap: var(--s4); }
+  .side.model { text-align: left; align-items: flex-start; }
+  .dash { display: none; }
 }
