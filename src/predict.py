@@ -1,4 +1,5 @@
 import difflib
+import logging
 
 import joblib
 import numpy as np
@@ -9,6 +10,13 @@ TABLE_PATH = "data/processed/player_seasons_clean.csv"
 
 # Must match the features used in train_model.py
 FEATURES = ["age", "season", "games", "minutes", "goals", "assists", "height_in_cm", "position"]
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
+
+
+class PlayerNotFoundError(Exception):
+    """Raised when a name doesn't match exactly one player in the table."""
 
 
 def load_model(path=MODEL_PATH):
@@ -22,14 +30,15 @@ def load_table(path=TABLE_PATH):
 
 
 def find_player(name, table):
-    """Return every season for the best match for name, or None if nothing matches.
+    """Return every season for the best match for name.
 
     Tries, in order: the exact name ignoring case ("bukayo saka"), names that
     contain the text ("saka"), then the closest spelling ("Bukayo Sakaa").
+    Raises PlayerNotFoundError if there is no match or several possible matches.
     """
     query = name.strip().lower()
     if not query:
-        return None
+        raise PlayerNotFoundError("No name entered.")
     lower_names = table["name"].str.lower()
 
     exact = table[lower_names == query]
@@ -41,16 +50,18 @@ def find_player(name, table):
         return partial
     if partial["name"].nunique() > 1:
         options = ", ".join(sorted(partial["name"].unique())[:5])
-        print(f"'{name}' matches several players: {options}")
-        return None
+        raise PlayerNotFoundError(f"'{name}' matches several players: {options}. Be more specific.")
 
     # cutoff=0.8 means the spelling must be at least 80% similar
     close = difflib.get_close_matches(query, lower_names.unique(), n=1, cutoff=0.8)
     if close:
         match = table[lower_names == close[0]]
-        print(f"No exact match for '{name}', showing {match['name'].iloc[0]}")
+        logger.info("No exact match for '%s', showing %s", name, match["name"].iloc[0])
         return match
-    return None
+
+    raise PlayerNotFoundError(
+        f"No Premier League outfield player called '{name}' with 900+ minutes in a season."
+    )
 
 
 def predict_values(rows, model):
@@ -87,17 +98,24 @@ def show_player(result):
 
 
 def main():
-    model = load_model()
-    table = load_table()
-    print("Type a player's name, or q to quit.")
+    try:
+        model = load_model()
+        table = load_table()
+    except FileNotFoundError as err:
+        logger.error("Missing file: %s. Run src/train_model.py first.", err.filename)
+        return
 
+    print("Type a player's name, or q to quit.")
     while True:
         name = input("\nEnter a player: ")
         if name.strip().lower() == "q":
             break
-        rows = find_player(name, table)
-        if rows is not None:
-            show_player(predict_values(rows, model))
+        try:
+            rows = find_player(name, table)
+        except PlayerNotFoundError as err:
+            logger.warning(err)
+            continue
+        show_player(predict_values(rows, model))
 
 
 if __name__ == "__main__":
