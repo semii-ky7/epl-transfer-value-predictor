@@ -56,6 +56,12 @@ if name:
         st.caption(f"The model's prediction is {euros(abs(latest['gap']))} "
                    f"{'below' if latest['gap'] < 0 else 'above'} Transfermarkt's value.")
 
+        st.write("**Actual vs predicted value by season (€m)**")
+        chart = result.assign(season=result["season"].map(season_label)).set_index("season")
+        chart = chart[["market_value", "predicted"]] / 1_000_000
+        chart.columns = ["Transfermarkt", "Model"]
+        st.line_chart(chart, color=["#e67e22", "#2e86c1"])
+
         st.write("**Every season**")
         seasons = result.assign(season=result["season"].map(season_label))
         seasons = seasons[["season", "age", "goals", "assists", "market_value", "predicted"]]
